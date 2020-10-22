@@ -8,6 +8,7 @@ function Content(props) {
 	return (
 		<div style={styles.content}>
 			<Switch>
+				<Route path="/" component={() => <ConvertCurrency />} />
 				<Route path="/tasks/convertcurrency" component={() => <ConvertCurrency />} />
 			</Switch>
 		</div>

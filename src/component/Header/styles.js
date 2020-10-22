@@ -5,6 +5,7 @@ const styles = {
 		height: '10vh',
 		background: '#fff',
 	},
+	headerTitle: { padding: 23, fontWeight: 'bold' },
 }
 
 export default styles

@@ -20,7 +20,7 @@ class SideBar extends React.Component {
 										style={styles.menuItem}
 										className={
 											this.props.location.pathname.substr(1).split('/')[1] ===
-											'convertcurrency'
+												'convertcurrency' || this.props.location.pathname === '/'
 												? 'activeTab'
 												: ''
 										}>

@@ -1,5 +1,6 @@
 import React from 'react'
-import { InputNumber, Select, Button, Input } from 'antd'
+import { Select, Button, Input, notification } from 'antd'
+import styles from './styles'
 
 const { Option } = Select
 const currencyType = [
@@ -47,6 +48,8 @@ class ConvertCurrency extends React.Component {
 			outputFieldValue: 0,
 			inputDropdownValue: currencyType[0],
 			outputDropdownValue: currencyType[0],
+			onload: true,
+			loading: false,
 		}
 	}
 
@@ -81,8 +84,35 @@ class ConvertCurrency extends React.Component {
 	}
 
 	calculateOutputCurrency = async () => {
-		const data = await this.fetchCurrencyDetails()
-		console.log(data)
+		const { outputDropdownValue, inputDropdownValue, inputFieldValue } = this.state
+
+		if (
+			inputDropdownValue !== '' &&
+			inputFieldValue !== 0 &&
+			inputDropdownValue !== 'SELECT' &&
+			outputDropdownValue !== 'SELECT' &&
+			inputDropdownValue !== outputDropdownValue
+		) {
+			this.setState({ loading: true })
+			const data = await this.fetchCurrencyDetails()
+			this.setState({ outputFieldValue: data[outputDropdownValue], loading: false })
+		} else {
+			if (
+				inputDropdownValue === outputDropdownValue &&
+				inputDropdownValue !== 'SELECT' &&
+				outputDropdownValue !== 'SELECT' &&
+				inputDropdownValue !== '' &&
+				inputFieldValue !== 0
+			) {
+				notification.warning({
+					message: `Please choose two different currency.`,
+					placement: 'bottomRight',
+					duration: 5,
+				})
+			}
+		}
+
+		this.setState({ onload: false })
 	}
 
 	render() {
@@ -91,17 +121,15 @@ class ConvertCurrency extends React.Component {
 			outputDropdownValue,
 			inputFieldValue,
 			outputFieldValue,
+			onload,
+			loading,
 		} = this.state
+
 		return (
-			<div style={{ display: 'flex', textAlign: 'center', margin: 'auto' }}>
-				<div
-					style={{
-						width: '20vw',
-						border: '1px solid #242424ab',
-						padding: 30,
-					}}>
-					<div style={{ marginBottom: 10 }}>Input Amount</div>
-					<div style={{ marginBottom: 10 }}>
+			<div style={styles.convertCurrencyContainer}>
+				<div style={styles.currencyInputContainer}>
+					<div style={styles.marginBottomDiv}>Input Amount</div>
+					<div style={styles.marginBottomDiv}>
 						<Input
 							onChange={this.onChangeInput}
 							placeholder="Input Amount"
@@ -109,10 +137,13 @@ class ConvertCurrency extends React.Component {
 							defaultValue={0}
 							value={inputFieldValue}
 						/>
+						{!onload && (inputFieldValue === 0 || inputFieldValue === '') ? (
+							<span style={styles.errorTextColor}>Please enter input amount</span>
+						) : null}
 					</div>
-					<div style={{ marginBottom: 10 }}>
+					<div style={styles.marginBottomDiv}>
 						<Select
-							style={{ width: 150 }}
+							style={styles.dropdownWidth}
 							defaultValue={currencyType[0]}
 							placeholder="Select currency"
 							value={inputDropdownValue}
@@ -121,35 +152,30 @@ class ConvertCurrency extends React.Component {
 								return <Option value={currency}>{currency}</Option>
 							})}
 						</Select>
+						<br />
+						{!onload && inputDropdownValue === 'SELECT' ? (
+							<span style={styles.errorTextColor}>Please choose input currency</span>
+						) : null}
 					</div>
 				</div>
-				<div
-					style={{
-						width: '15vw',
-						marginTop: '10vh',
-					}}>
-					<Button onClick={this.calculateOutputCurrency}>Convert</Button>
+				<div style={styles.currencyConvertButton}>
+					<Button loading={loading} onClick={this.calculateOutputCurrency}>
+						{loading ? 'Converting' : 'Convert'}
+					</Button>
 				</div>
-				<div
-					style={{
-						width: '20vw',
-						border: '1px solid #242424ab',
-						padding: 30,
-					}}>
-					<div style={{ marginBottom: 10 }}>Output Amount</div>
-					<div style={{ marginBottom: 10 }}>
+				<div style={styles.currencyInputContainer}>
+					<div style={styles.marginBottomDiv}>Output Amount</div>
+					<div style={styles.marginBottomDiv}>
 						<Input
-							disabled
-							onChange={this.onChangeOutput}
 							placeholder="Output Amount"
 							maxLength={25}
 							defaultValue={0}
 							value={outputFieldValue}
 						/>
 					</div>
-					<div style={{ marginBottom: 10 }}>
+					<div style={styles.marginBottomDiv}>
 						<Select
-							style={{ width: 150 }}
+							style={styles.dropdownWidth}
 							defaultValue={currencyType[0]}
 							value={outputDropdownValue}
 							placeholder="Select currency"
@@ -158,6 +184,10 @@ class ConvertCurrency extends React.Component {
 								return <Option value={currency}>{currency}</Option>
 							})}
 						</Select>
+						<br />
+						{!onload && outputDropdownValue === 'SELECT' ? (
+							<span style={styles.errorTextColor}>Please choose output currency</span>
+						) : null}
 					</div>
 				</div>
 			</div>
